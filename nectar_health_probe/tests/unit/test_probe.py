@@ -15,6 +15,7 @@ import os
 import tempfile
 from unittest import mock
 
+from oslo_config import cfg
 import oslo_messaging as messaging
 
 from nectar_health_probe import probe
@@ -145,6 +146,12 @@ class TestAMQP(base.TestCase):
 
 
 class TestMain(base.TestCase):
+    def setUp(self):
+        super().setUp()
+        # main() registers its CLI opts on and parses the global CONF;
+        # clear the parsed state so each test can run main() afresh.
+        self.addCleanup(cfg.CONF.clear)
+
     @mock.patch.object(probe.messaging, 'set_transport_defaults')
     @mock.patch.object(probe, 'check_rpc_ping', return_value=0)
     def test_topic_defaults_from_project(self, mock_check, mock_defaults):

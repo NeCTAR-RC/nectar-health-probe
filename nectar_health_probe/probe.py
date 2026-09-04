@@ -187,7 +187,12 @@ def main(argv=None):
         # service itself.
         messaging.set_transport_defaults(control_exchange=project)
 
-    conf = cfg.ConfigOpts()
+    # Use the global CONF object: oslo.messaging registers some option
+    # groups (e.g. oslo_messaging_metrics) on the global object at
+    # import time but reads them back from the conf the transport was
+    # created with, so a private ConfigOpts raises NoSuchOptError
+    # inside client.call().
+    conf = cfg.CONF
     conf.register_cli_opts(cli_opts)
     conf.register_opts(opts)
     release = version.VersionInfo('nectar-health-probe').release_string()
